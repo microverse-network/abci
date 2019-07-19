@@ -1,0 +1,81 @@
+version: "3.7"
+
+x-common:
+  &common
+    init: true
+    tty: true
+
+x-abci:
+  &abci
+  image: microversenetwork/abci
+  environment:
+    - DEBUG=microverse*,abci*
+
+x-node:
+  &node
+  image: microversenetwork/tendermint
+
+services:
+  tracker:
+    << : *common
+    container_name: tracker
+    image: microversenetwork/tracker
+
+  abci_0:
+    << : *abci
+    << : *common
+    container_name: abci_0
+
+  abci_1:
+    << : *abci
+    << : *common
+    container_name: abci_1
+
+  abci_2:
+    << : *abci
+    << : *common
+    container_name: abci_2
+
+  abci_3:
+    << : *abci
+    << : *common
+    container_name: abci_3
+
+  node_0:
+    << : *node
+    << : *common
+    command: node --proxy_app=tcp://abci_0:26658 --log_level="*:debug"
+    container_name: node_0
+    depends_on:
+      - abci_0
+    volumes:
+      - ./data/node_0:/tendermint
+
+  node_1:
+    << : *node
+    << : *common
+    command: node --proxy_app=tcp://abci_1:26658 --log_level="*:debug"
+    container_name: node_1
+    depends_on:
+      - abci_1
+    volumes:
+      - ./data/node_1:/tendermint
+
+  node_2:
+    << : *node
+    << : *common
+    command: node --proxy_app=tcp://abci_2:26658 --log_level="*:debug"
+    container_name: node_2
+    depends_on:
+      - abci_2
+    volumes:
+      - ./data/node_2:/tendermint
+
+  node_3:
+    << : *node
+    command: node --proxy_app=tcp://abci_3:26658 --log_level="*:debug"
+    container_name: node_3
+    depends_on:
+      - abci_3
+    volumes:
+      - ./data/node_3:/tendermint
